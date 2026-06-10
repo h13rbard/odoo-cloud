@@ -11,9 +11,9 @@ variable "location" {
 }
 
 variable "vm_size" {
-  description = "Tamaño de la instancia para soportar la carga analítica de las 45k ventas"
+  description = "Tamaño de la instancia para soportar la carga analítica"
   type        = string
-  default     = "Standard_B2s" # 2 vCPUs, 4 GB RAM. Ideal para Odoo 17 + Postgres en producción.
+  default     = "Standard_D2as_v5" # 👈 Cambiamos a la serie D estándar con alta disponibilidad de cómputo
 }
 
 variable "admin_username" {

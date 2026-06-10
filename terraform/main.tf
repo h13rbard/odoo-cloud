@@ -111,7 +111,7 @@ resource "azurerm_network_interface_security_group_association" "nic_nsg_assoc" 
 resource "azurerm_marketplace_agreement" "rocky_terms" {
   publisher = "resf"
   offer     = "rockylinux-x86_64"
-  plan      = "9-base"
+  plan      = "9-lvm"
 }
 
 
