@@ -122,9 +122,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   # Autenticación segura por Llave Pública SSH
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file("~/.ssh/id_rsa.pub") # Asegúrate de que esta ruta apunte a tu llave pública local
+    public_key = var.ssh_public_key # 👈 Cambiamos a una variable
   }
-
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS" # SSD Premium para evitar cuellos de botella con Postgres

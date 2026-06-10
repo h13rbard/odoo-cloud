@@ -21,3 +21,8 @@ variable "admin_username" {
   type        = string
   default     = "azureuser"
 }
+
+variable "ssh_public_key" {
+  description = "Llave pública SSH para la inyección de seguridad en la VM de Azure"
+  type        = string
+}
