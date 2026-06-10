@@ -1,0 +1,117 @@
+name: "🚀 Odoo 17 Production Deployment Pipeline (Azure)"
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  # =======================================================
+  # ETAPA 1: INFRAESTRUCTURA COMO CÓDIGO (TERRAFORM)
+  # =======================================================
+  terraform:
+    name: "🏗️ Provision Infrastructure"
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CREDENTIALS && json(secrets.AZURE_CREDENTIALS).clientId }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CREDENTIALS && json(secrets.AZURE_CREDENTIALS).clientSecret }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_CREDENTIALS && json(secrets.AZURE_CREDENTIALS).tenantId }}
+
+    outputs:
+      public_ip: ${{ steps.get_ip.outputs.VM_IP }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
+
+      - name: Terraform Validate
+        run: |
+          cd terraform
+          terraform validate
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve
+
+      - name: Extract Public IP Output
+        id: get_ip
+        run: |
+          cd terraform
+          IP=$(terraform-output -raw public_ip_address)
+          echo "VM_IP=$IP" >> $GITHUB_OUTPUT
+          echo "🚀 La IP Pública asignada en Azure es: $IP"
+
+  # =======================================================
+  # ETAPA 2: CONFIGURACIÓN SRE & DESPLIEGUE DOCKER (GITOPS)
+  # =======================================================
+  deploy:
+    name: "🐳 Deploy Application & Hardening"
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ needs.terraform.outputs.public_ip }} >> ~/.ssh/known_hosts
+
+      - name: Execute Remote Deployment via SSH (AlmaLinux 9)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ needs.terraform.outputs.public_ip }}
+          username: "azureuser"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "========================================================="
+            echo "🛡️ INICIANDO HARDENING Y CONFIGURACIÓN EN ALMALINUX 9"
+            echo "========================================================="
+            
+            # 1. Actualizar repositorio e instalar dependencias base
+            sudo dnf update -y
+            sudo dnf install -y yum-utils git git-core curl
+            
+            # 2. Instalar Docker y Docker Compose de forma segura
+            sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+            sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            
+            # 3. Habilitar y encender servicios
+            sudo systemctl enable --now docker
+            
+            # 4. Clonar o actualizar la estructura del proyecto en producción
+            if [ -d "~/app/odoo-cloud" ]; then
+              cd ~/app/odoo-cloud
+              git pull origin main
+            else
+              mkdir -p ~/app
+              git clone https://github.com/${{ github.repository }}.git ~/app/odoo-cloud
+              cd ~/app/odoo-cloud
+             Downs v
+            fi
+            
+            # 5. Levantar la pila de contenedores (Odoo, Postgres, Nginx)
+            cd ~/app/odoo-cloud/docker/
+            sudo docker compose down
+            sudo docker compose up -d --build
+            
+            echo "========================================================="
+            echo "✅ CONTENEDORES LEVANTADOS Y CONFIGURADOS CON ÉXITO"
+            echo "========================================================="

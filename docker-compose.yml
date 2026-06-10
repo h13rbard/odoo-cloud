@@ -1,0 +1,39 @@
+#version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: odoo_db_local
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=sistemas26#
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    networks:
+      - odoo_network
+
+  web:
+    image: odoo:17.0
+    container_name: odoo_web_local
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo_data_local:/var/lib/odoo
+      - ./extra-addons:/mnt/extra-addons  # Carpeta para tus módulos personalizados
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=sistemas26#
+    networks:
+      - odoo_network
+
+volumes:
+  postgres_data_local:
+  odoo_data_local:
+
+networks:
+  odoo_network:
+    driver: bridge
