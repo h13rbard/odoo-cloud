@@ -130,11 +130,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
     disk_size_gb         = 30            # Espacio óptimo para Odoo, filestore y logs
   }
 
-  # Imagen oficial de AlmaLinux 9 obtenida del Marketplace de Azure
   source_image_reference {
-    publisher = "almalinux"
-    offer     = "almalinux9"       # Todo junto
-    sku       = "9_x86_64-gen2"    # Especificando arquitectura y generación
+    publisher = "resf"
+    offer     = "rockylinux-9"
+    sku       = "9-gen2"
     version   = "latest"
   }
 }
