@@ -108,9 +108,16 @@ resource "azurerm_network_interface_security_group_association" "nic_nsg_assoc" 
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-# 7. MÁQUINA VIRTUAL DE PRODUCCIÓN (AlmaLinux 9.0)
+resource "azurerm_marketplace_agreement" "rocky_terms" {
+  publisher = "resf"
+  offer     = "rockylinux-x86_64"
+  plan      = "9-base"
+}
+
+
+# 7. MÁQUINA VIRTUAL DE PRODUCCIÓN (Rocky Linux 9.0)
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = "vm-odoo-almalinux9"
+  name                = "vm-odoo-rockylinux9"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   size                = var.vm_size
@@ -130,10 +137,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
     disk_size_gb         = 30            # Espacio óptimo para Odoo, filestore y logs
   }
 
+  # 🚀 ESTRUCTURA PERFECTA PARA ROCKY LINUX 9 CON LVM
   source_image_reference {
     publisher = "resf"
-    offer     = "rockylinux-9"
-    sku       = "9-gen2"
+    offer     = "rockylinux-x86_64"
+    sku       = "9-lvm"               # Cambiamos a '9-lvm' para heredar la estructura de volúmenes compatible
     version   = "latest"
   }
 }
