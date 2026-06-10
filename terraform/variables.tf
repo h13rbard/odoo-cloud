@@ -7,13 +7,13 @@ variable "resource_group_name" {
 variable "location" {
   description = "Región de Azure donde se desplegarán los recursos"
   type        = string
-  default     = "eastus2" # Puedes cambiarlo a 'southcentralus' o la región más cercana a ti
+  default     = "eastus" # Puedes cambiarlo a 'southcentralus' o la región más cercana a ti
 }
 
 variable "vm_size" {
   description = "Tamaño de la instancia para soportar la carga analítica"
   type        = string
-  default     = "Standard_D2as_v5" # 👈 Cambiamos a la serie D estándar con alta disponibilidad de cómputo
+  default     = "Standard_B2s" 
 }
 
 variable "admin_username" {
