@@ -133,8 +133,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   # Imagen oficial de AlmaLinux 9 obtenida del Marketplace de Azure
   source_image_reference {
     publisher = "almalinux"
-    offer     = "almalinux-9"
-    sku       = "9-gen2"
+    offer     = "almalinux9"       # Todo junto
+    sku       = "9_x86_64-gen2"    # Especificando arquitectura y generación
     version   = "latest"
   }
 }
