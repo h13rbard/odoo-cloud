@@ -106,27 +106,25 @@ jobs:
             # 3. Habilitar y encender servicios
             sudo systemctl enable --now docker
             
-            # 4. Clonar o actualizar la estructura del proyecto en producción
-            if [ -d "~/app/odoo-cloud" ]; then
-              cd ~/app/odoo-cloud
-              sudo git pull origin main
-            else
-              sudo mkdir -p ~/app
-              sudo chown -R azureuser:azureuser ~/app
-              git clone https://github.com/${{ github.repository }}.git ~/app/odoo-cloud
-              cd ~/app/odoo-cloud
-            fi
-            
+            # 4. Clonación limpia del proyecto (Evita problemas de propiedad de Git)
+            echo "📦 Actualizando fuentes del proyecto..."
+            rm -rf ~/app/odoo-cloud
+            mkdir -p ~/app
+            git clone https://github.com/${{ github.repository }}.git ~/app/odoo-cloud
+            cd ~/app/odoo-cloud
+
             # 5. Levantar la pila de contenedores (Odoo, Postgres, Nginx)
-            if [ -d "~/app/odoo-cloud/docker" ]; then
-              cd ~/app/odoo-cloud/docker
+            echo "🐳 Verificando entorno Docker..."
+            if [ -d "docker" ]; then
+              cd docker
               sudo docker compose down --remove-orphans
               sudo docker compose up -d --build
             else
-              echo "❌ Error: No se encontró la carpeta docker/"
+              echo "❌ Error Crítico: No se encontró la carpeta docker/ en el repositorio clonado."
+              ls -la ~/app/odoo-cloud
               exit 1
             fi
-            
+                        
             echo "========================================================="
             echo "✅ CONTENEDORES LEVANTADOS Y CONFIGURADOS CON ÉXITO"
             echo "========================================================="
