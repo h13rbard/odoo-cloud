@@ -5,7 +5,7 @@ postgres_data/
 odoo_data/
 backups/olds
 backups/
-scrips/others
+scripts/others
 total_master/
 # Bloquear archivos e inventarios locales de Terraform
 .terraform/
