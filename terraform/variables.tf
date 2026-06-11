@@ -7,7 +7,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Región de Azure Mexico Central"
   type        = string
-  default     = "eastus3" # 👈 Cambiamos a la región de Querétaro
+  default     = "denmarkeast" # 👈 Cambiamos a la región de denmarkeast
 }
 
 variable "vm_size" {
