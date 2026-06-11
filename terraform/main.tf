@@ -116,6 +116,13 @@ resource "azurerm_linux_virtual_machine" "vm" {
   location            = azurerm_resource_group.rg.location
   size                = var.vm_size
   admin_username      = var.admin_username
+
+  #BLOQUE MANDATORIO AGREGADO (Para resolver el VMMarketplaceInvalidInput)
+  plan {
+    name      = "9-lvm"
+    product   = "rockylinux-x86_64"
+    publisher = "resf"
+  }
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
