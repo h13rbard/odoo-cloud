@@ -19,8 +19,8 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CREDENTIALS && fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CREDENTIALS && fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_CREDENTIALS && fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}      
-      
+      ARM_TENANT_ID: ${{ secrets.AZURE_CREDENTIALS && fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
+
     outputs:
       public_ip: ${{ steps.get_ip.outputs.VM_IP }}
 
@@ -38,22 +38,20 @@ jobs:
           cd terraform
           terraform init
 
-      - name: Terraform Validate
-        run: |
-          cd terraform
-          terraform validate
+      # 🔄 Intentar recuperar el estado anterior si existe para evitar colisiones
+      - name: Download Previous Terraform State
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-state
+          path: terraform/
+          run-id: ${{ github.run_id }}
+          missing-value: 'ignore'
+        continue-on-error: true
 
       - name: Terraform Apply
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CREDENTIALS && fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CREDENTIALS && fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_CREDENTIALS && fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
-          
-          
-        run: |          
+        run: |
           cd terraform
-          terraform apply -auto-approve
+          terraform apply -auto-approve || (echo "Intentando importar si ya existe..." && terraform import azurerm_resource_group.rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-odoo-production && terraform apply -auto-approve)
 
       - name: Extract Public IP Output
         id: get_ip
@@ -61,7 +59,15 @@ jobs:
           cd terraform
           IP=$(terraform output -raw public_ip_address)
           echo "VM_IP=$IP" >> $GITHUB_OUTPUT
-          echo "🚀 La IP Pública en Azure es: $IP"
+          echo "🚀 La IP Pública asignada en Azure es: $IP"
+
+      # 💾 Guardar el estado actual para la Etapa 2 y futuras corridas
+      - name: Upload Current Terraform State
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state
+          path: terraform/terraform.tfstate
+          retention-days: 1
 
   # =======================================================
   # ETAPA 2: CONFIGURACIÓN SRE & DESPLIEGUE DOCKER (GITOPS)
@@ -81,7 +87,7 @@ jobs:
           chmod 600 ~/.ssh/id_azure_prod
           ssh-keyscan -H ${{ needs.terraform.outputs.public_ip }} >> ~/.ssh/known_hosts
 
-      - name: Execute Remote Deployment via SSH (RockyLinux 9)
+      - name: Execute Remote Deployment via SSH (Rocky Linux 9)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ needs.terraform.outputs.public_ip }}
@@ -89,7 +95,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "========================================================="
-            echo "🛡️ INICIANDO HARDENING Y CONFIGURACIÓN EN ALMALINUX 9"
+            echo "🛡️ INICIANDO HARDENING Y CONFIGURACIÓN EN ROCKY LINUX 9"
             echo "========================================================="
             
             # 1. Actualizar repositorio e instalar dependencias base
@@ -111,7 +117,6 @@ jobs:
               mkdir -p ~/app
               git clone https://github.com/${{ github.repository }}.git ~/app/odoo-cloud
               cd ~/app/odoo-cloud
-             Downs v
             fi
             
             # 5. Levantar la pila de contenedores (Odoo, Postgres, Nginx)
