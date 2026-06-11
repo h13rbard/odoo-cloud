@@ -116,6 +116,12 @@ resource "azurerm_linux_virtual_machine" "vm" {
   location            = azurerm_resource_group.rg.location
   size                = var.vm_size
   admin_username      = var.admin_username
+
+  # ✨ PROPIEDADES OBLIGATORIAS PARA LA SERIE DCas_v6 (Confidential Computing)
+  secure_boot_enabled = true
+  vtpm_enabled        = true
+  security_type       = "TrustedLaunch" # 👈 Esto elimina el error de <NULL>
+  
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
