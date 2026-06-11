@@ -44,7 +44,7 @@ jobs:
         with:
           name: terraform-state
           path: terraform/
-          continue-on-error: true
+        continue-on-error: true
 
       - name: Terraform Apply
         run: |
