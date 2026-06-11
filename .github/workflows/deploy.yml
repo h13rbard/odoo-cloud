@@ -77,11 +77,11 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_azure_prod
+          chmod 600 ~/.ssh/id_azure_prod
           ssh-keyscan -H ${{ needs.terraform.outputs.public_ip }} >> ~/.ssh/known_hosts
 
-      - name: Execute Remote Deployment via SSH (AlmaLinux 9)
+      - name: Execute Remote Deployment via SSH (RockyLinux 9)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ needs.terraform.outputs.public_ip }}
