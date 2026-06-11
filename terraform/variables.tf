@@ -13,7 +13,7 @@ variable "location" {
 variable "vm_size" {
   description = "Tamaño de la instancia para soportar la carga analítica"
   type        = string
-  default     = "Standard_B2s" 
+  default     = "Standard_D2as_v5" 
 }
 
 variable "admin_username" {

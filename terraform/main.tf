@@ -108,12 +108,6 @@ resource "azurerm_network_interface_security_group_association" "nic_nsg_assoc" 
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-resource "azurerm_marketplace_agreement" "rocky_terms" {
-  publisher = "resf"
-  offer     = "rockylinux-x86_64"
-  plan      = "9-lvm"
-}
-
 
 # 7. MÁQUINA VIRTUAL DE PRODUCCIÓN (Rocky Linux 9.0)
 resource "azurerm_linux_virtual_machine" "vm" {
