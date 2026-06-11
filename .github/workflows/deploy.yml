@@ -44,9 +44,7 @@ jobs:
         with:
           name: terraform-state
           path: terraform/
-          run-id: ${{ github.run_id }}
-          missing-value: 'ignore'
-        continue-on-error: true
+          continue-on-error: true
 
       - name: Terraform Apply
         run: |
