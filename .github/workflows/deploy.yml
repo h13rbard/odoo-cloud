@@ -68,31 +68,30 @@ jobs:
           name: terraform-state
           path: terraform/terraform.tfstate
           retention-days: 1
-
-  # =======================================================
+          
+# =======================================================
   # ETAPA 2: CONFIGURACIÓN SRE & DESPLIEGUE DOCKER (GITOPS)
   # =======================================================
   deploy:
     name: "🐳 Deploy Application & Hardening"
     needs: terraform
     runs-on: ubuntu-latest
+    # 🔐 Forzamos al job a heredar explícitamente todos los secretos del repositorio
+    environment: production 
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_azure_prod
-          chmod 600 ~/.ssh/id_azure_prod
-          ssh-keyscan -H ${{ needs.terraform.outputs.public_ip }} >> ~/.ssh/known_hosts
-
+      # Ejecutamos el despliegue usando la inyección directa y limpia de la llave
       - name: Execute Remote Deployment via SSH (Rocky Linux 9)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ needs.terraform.outputs.public_ip }}
           username: "azureuser"
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Usamos comillas para obligar a GitHub a pasar el bloque multilinea intacto
+          key: "${{ secrets.SSH_PRIVATE_KEY }}"
+          port: 22
           script: |
             echo "========================================================="
             echo "🛡️ INICIANDO HARDENING Y CONFIGURACIÓN EN ROCKY LINUX 9"
@@ -112,17 +111,23 @@ jobs:
             # 4. Clonar o actualizar la estructura del proyecto en producción
             if [ -d "~/app/odoo-cloud" ]; then
               cd ~/app/odoo-cloud
-              git pull origin main
+              sudo git pull origin main
             else
-              mkdir -p ~/app
+              sudo mkdir -p ~/app
+              sudo chown -R azureuser:azureuser ~/app
               git clone https://github.com/${{ github.repository }}.git ~/app/odoo-cloud
               cd ~/app/odoo-cloud
             fi
             
             # 5. Levantar la pila de contenedores (Odoo, Postgres, Nginx)
-            cd ~/app/odoo-cloud/docker/
-            sudo docker compose down
-            sudo docker compose up -d --build
+            if [ -d "~/app/odoo-cloud/docker" ]; then
+              cd ~/app/odoo-cloud/docker
+              sudo docker compose down --remove-orphans
+              sudo docker compose up -d --build
+            else
+              echo "❌ Error: No se encontró la carpeta docker/"
+              exit 1
+            fi
             
             echo "========================================================="
             echo "✅ CONTENEDORES LEVANTADOS Y CONFIGURADOS CON ÉXITO"
