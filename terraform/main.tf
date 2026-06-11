@@ -138,7 +138,4 @@ resource "azurerm_linux_virtual_machine" "vm" {
     sku       = "9-lvm" # '9-lvm' para heredar la estructura de volúmenes
     version   = "latest"
   }
-
-  secure_boot_enabled = true
-  vtpm_enabled        = true
 }
