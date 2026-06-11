@@ -116,11 +116,6 @@ resource "azurerm_linux_virtual_machine" "vm" {
   location            = azurerm_resource_group.rg.location
   size                = var.vm_size
   admin_username      = var.admin_username
-
-  # ✨ PROPIEDADES OBLIGATORIAS PARA LA SERIE DCas_v6 (Confidential Computing)
-  secure_boot_enabled = true
-  vtpm_enabled        = true
-  
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
@@ -140,7 +135,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
   source_image_reference {
     publisher = "resf"
     offer     = "rockylinux-x86_64"
-    sku       = "9-lvm"               # Cambiamos a '9-lvm' para heredar la estructura de volúmenes compatible
+    sku       = "9-lvm" # '9-lvm' para heredar la estructura de volúmenes
     version   = "latest"
   }
+
+  secure_boot_enabled = true
+  vtpm_enabled        = true
 }

@@ -7,13 +7,13 @@ variable "resource_group_name" {
 variable "location" {
   description = "Región de Azure Mexico Central"
   type        = string
-  default     = "mexicocentral" # 👈 Cambiamos a la región de Querétaro
+  default     = "eastus3" # 👈 Cambiamos a la región de Querétaro
 }
 
 variable "vm_size" {
-  description = "Tamaño de instancia de nueva generación disponible con 8GB RAM"
+  description = " 2 vCPUs y 4GB RAM"
   type        = string
-  default     = "Standard_DC2as_v6" # 👈 Elegimos la de 2 vCPUs y 8GB RAM que está libre en tu lista
+  default     = "Standard_B2s" 
 }
 
 variable "admin_username" {
