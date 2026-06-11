@@ -5,15 +5,15 @@ variable "resource_group_name" {
 }
 
 variable "location" {
-  description = "Región de Azure donde se desplegarán los recursos"
+  description = "Región de Azure Mexico Central"
   type        = string
-  default     = "eastus" # Puedes cambiarlo a 'southcentralus' o la región más cercana a ti
+  default     = "mexicocentral" # 👈 Cambiamos a la región de Querétaro
 }
 
 variable "vm_size" {
-  description = "Tamaño de la instancia para soportar la carga analítica"
+  description = "Tamaño de instancia de nueva generación disponible con 8GB RAM"
   type        = string
-  default     = "Standard_D2as_v5" 
+  default     = "Standard_DC2as_v6" # 👈 Elegimos la de 2 vCPUs y 8GB RAM que está libre en tu lista
 }
 
 variable "admin_username" {
