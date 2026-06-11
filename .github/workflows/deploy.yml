@@ -61,7 +61,7 @@ jobs:
           cd terraform
           IP=$(terraform output -raw public_ip_address)
           echo "VM_IP=$IP" >> $GITHUB_OUTPUT
-          echo "🚀 La IP Pública asignada en Azure es: $IP"
+          echo "🚀 La IP Pública en Azure es: $IP"
 
   # =======================================================
   # ETAPA 2: CONFIGURACIÓN SRE & DESPLIEGUE DOCKER (GITOPS)
