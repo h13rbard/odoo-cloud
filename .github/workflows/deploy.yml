@@ -59,7 +59,7 @@ jobs:
         id: get_ip
         run: |
           cd terraform
-          IP=$(terraform-output -raw public_ip_address)
+          IP=$(terraform output -raw public_ip_address)
           echo "VM_IP=$IP" >> $GITHUB_OUTPUT
           echo "🚀 La IP Pública asignada en Azure es: $IP"
 
