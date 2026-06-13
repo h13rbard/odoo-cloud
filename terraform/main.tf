@@ -62,6 +62,19 @@ resource "azurerm_network_security_group" "nsg" {
     destination_address_prefix = "*"
   }
 
+  # REGLA NUEVA: PERMITIR TRÁFICO WEB A ODOO
+  security_rule {
+    name                       = "Odoo-Web"
+    priority                   = 1002
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8069" # 👈 El puerto de tu contenedor
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
   # Regla HTTP (Nginx / Certbot validation)
   security_rule {
     name                       = "allow-http"
