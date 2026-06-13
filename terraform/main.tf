@@ -86,7 +86,7 @@ resource "azurerm_network_security_group" "nsg" {
   # Regla HTTP (Nginx / Certbot validation)
   security_rule {
     name                       = "allow-http"
-    priority                   = 1002
+    priority                   = 1003
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -99,7 +99,7 @@ resource "azurerm_network_security_group" "nsg" {
   # Regla HTTPS (Tráfico Seguro de Producción)
   security_rule {
     name                       = "allow-https"
-    priority                   = 1003
+    priority                   = 1004
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
