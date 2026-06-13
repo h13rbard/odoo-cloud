@@ -39,17 +39,10 @@ jobs:
           terraform init
 
       # 🔄 Intentar recuperar el estado anterior si existe para evitar colisiones
-      - name: Download Previous Terraform State
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-state
-          path: terraform/
-        continue-on-error: true
-
       - name: Terraform Apply
         run: |
           cd terraform
-          terraform apply -auto-approve || (echo "Intentando importar si ya existe..." && terraform import azurerm_resource_group.rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-odoo-production && terraform apply -auto-approve)
+          terraform apply -auto-approve 
 
       - name: Extract Public IP Output
         id: get_ip
@@ -59,13 +52,6 @@ jobs:
           echo "VM_IP=$IP" >> $GITHUB_OUTPUT
           echo "🚀 La IP Pública asignada en Azure es: $IP"
 
-      # 💾 Guardar el estado actual para la Etapa 2 y futuras corridas
-      - name: Upload Current Terraform State
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-state
-          path: terraform/terraform.tfstate
-          retention-days: 1
           
 # =======================================================
   # ETAPA 2: CONFIGURACIÓN SRE & DESPLIEGUE DOCKER (GITOPS)

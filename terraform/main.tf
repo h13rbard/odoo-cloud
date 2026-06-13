@@ -7,6 +7,14 @@ terraform {
       version = "~> 3.0"
     }
   }
+
+  # ✨ EL CANDADO DEFINITIVO: BACKEND REMOTO EN AZURE
+  backend "azurerm" {
+    resource_group_name  = "rg-odoo-production"
+    storage_account_name = "tfstateodoo45k" # 👈 El nombre que creaste en el Paso 1
+    container_name       = "tfstate"
+    key                  = "prod.terraform.tfstate"
+  }
 }
 
 provider "azurerm" {
