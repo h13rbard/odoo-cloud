@@ -108,8 +108,6 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-}
-
  # Regla de Seguridad para Monitoreo
   security_rule {
     name                       = "Prometheus-Scrape"
@@ -122,7 +120,9 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "91.134.143.28" # 👈 Solo tu VPS puede medir tu servidor
     destination_address_prefix = "*"
   }
-# 6. INTERFAZ DE RED (NIC) Y ASOCIACIÓN DEL NSG
+}
+   
+ # 6. INTERFAZ DE RED (NIC) Y ASOCIACIÓN DEL NSG
 resource "azurerm_network_interface" "nic" {
   name                = "nic-odoo-prod"
   location            = azurerm_resource_group.rg.location
