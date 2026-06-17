@@ -1,0 +1,18 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://80.211.24.173:3100/loki/api/v1/push # 👈 La IP de tu VPS de Aruba
+
+scrape_configs:
+  - job_name: odoo-docker-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker-logs
+          __path__: /var/lib/docker/containers/*/*.log # Captura todo lo que escupa odoo_web y postgres
