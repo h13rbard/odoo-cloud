@@ -82,6 +82,19 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+# Regla 4: HTTPS Seguro (Prioridad 1006)
+  security_rule {
+    name                       = "HTTPS"
+    priority                   = 1006
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
 
   # Regla HTTP (Nginx / Certbot validation)
   security_rule {
