@@ -13,3 +13,6 @@ total_master/
 *.tfstate.backup
 *.tfvars
 .terraform.lock.hcl
+
+/etc/letsencrypt/
+docker/certbot

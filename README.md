@@ -94,4 +94,52 @@ Manual Deployment Bootstrap
     ssh -i ~/.ssh/id_azure_prod azureuser@<YOUR_VM_PUBLIC_IP>
     docker ps
 
+---
+
+---
+
+## 🔒 Production Security, SSL Termination & Reverse Proxy Routing
+
+To ensure maximum security and zero-exposure of the ERP's internal ports to the public internet, the infrastructure implements an isolated **Nginx Reverse Proxy** acting as an **SSL/TLS Termination Endpoint** powered by **Let's Encrypt**. 
+
+The architecture bypasses host-level OS firewall complexities and safeguards data integrity by encapsulating the proxy and application fabrics into a single dedicated Docker network (`docker_odoo_network`).
+
+![Security Diagram](screenshots/proxy-diagram.png)
+
+Key Architectural Implementations:
+
+    Network Security Isolation: Port 8069 is completely stripped from public binding. It is only accessible via the internal Docker network mesh, forcing all inbound web traffic to register and pass through Nginx's security policies.
+
+    Automated Non-Blocking HTTP to HTTPS Redirection: Any raw HTTP request hitting port 80 is automatically intercepted by Nginx and issued a 301 Moved Permanently redirect header pointing to the encrypted HTTPS URI scheme.
+
+    Optimized Timeouts for Large Workloads: Custom buffers (proxy_read_timeout 720s) were engineered into the Nginx configuration. This prevents the proxy from dropping long-running database requests or connection handshakes when processing the massive 45,178 sales history records or executing complex accounting balances via Odoo Mates.
+
+    Automated Renewal Lifecycle: The Certbot sidecar container runs on an independent loop, automatically querying Let's Encrypt authorization APIs via standard webroot verification paths (/var/www/certbot) to renew TLS keys in the background with zero application downtime.
+
+## 📊 Centralized Observability & Distributed Monitoring Stack
+
+To guarantee optimal performance, proactive troubleshooting, and prevent monitoring agents from consuming CPU/RAM resources needed by the ERP engine, the infrastructure completely decouples the application layer from the monitoring fabric. 
+
+The production architecture separates workloads into two distinct zones: **Telemetry Collection Agents** (running on the Azure VM) and the **Centralized Data Aggregation & Visualization Core** (hosted on a dedicated Aruba VPS).
+
+![Observability Diagram](screenshots/observa-diagram.png)
+
+Telemetry Components & Data Flow:
+
+    Metrics Scraping (Prometheus & Node Exporter): * A lightweight Node Exporter container runs inside the Rocky Linux 9 host in Azure, exposing kernel-level performance data (CPU, Memory, Disk I/O, LVM volumes) safely on port 9100.
+
+        The centralized Prometheus engine on the Aruba VPS initiates secure cross-cloud scraping requests at a granular 15s interval, pulling metrics across the network perimeters. Access to port 9100 on Azure is strictly limited to the VPS IP via NSG firewall policies.
+
+    Log Aggregation (Loki & Promtail):
+
+        Promtail is deployed as a daemon log-shipper on the production node. It mounts the host's Docker socket directory (/var/lib/docker/containers) in a read-only state to intercept stdout/stderr streaming buffers directly from odoo_web_local and odoo_db.
+
+        Promtail instantly packages and pushes these structured streams to Grafana Loki over port 3100 on the VPS, optimizing network overhead and handling bad encodings on the fly.
+
+    Unified Visualization Dashboard (Grafana):
+
+        Grafana centralizes the end-to-end telemetry on the VPS. It utilizes specialized LogQL and PromQL query engines to cross-reference system anomalies with database logs on unified dashboards (such as the standard Node Exporter Full layout).
+
+        This setup allows real-time analysis of Odoo 17 transaction latencies, Werkzeug HTTP errors, and PostgreSQL storage usage from a single secured interface on port 3000.
+
 Developed and Maintained by Juan Gerardo Gutiérrez Muñoz - Senior Linux Systems Administrator & DevOps Professional.

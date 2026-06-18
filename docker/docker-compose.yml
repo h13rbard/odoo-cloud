@@ -55,6 +55,8 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot:ro
+    networks:
+      - odoo_network # 🔌 Conectamos Nginx aquí 
     restart: unless-stopped
 
   certbot:
@@ -80,4 +82,6 @@ volumes:
 
 networks:
   odoo_network:
-    driver: bridge
+    #driver: bridge
+    external: true
+    name: docker_odoo_network
